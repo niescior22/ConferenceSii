@@ -1,9 +1,9 @@
 package com.example.demo;
 
 
-import com.example.demo.Services.ConferenceService;
-import com.example.demo.Services.CurrentSessionComponent;
-import com.example.demo.Services.UserService;
+import com.example.demo.services.ConferenceService;
+import com.example.demo.services.CurrentSessionComponent;
+import com.example.demo.services.UserService;
 import com.example.demo.entity.Conference;
 import com.example.demo.entity.User;
 import com.example.demo.exceptions.EmailMissmatchException;
@@ -78,7 +78,27 @@ public class ConferenceUI extends UI {
 
 
         gridLayout.addComponent(formLayout, 1, 0);
+
+        FormLayout formLayoutToChangeEmail = new FormLayout();
+        formLayoutToChangeEmail.setHeight(160f, Unit.PIXELS);
+        verticalLayoutTopLeft.setHeight(160f, Unit.PIXELS);
+
+
+
         gridLayout.setComponentAlignment(formLayout, Alignment.TOP_RIGHT);
+        Button btntochangeEmail = new Button("Change email");
+
+        TextField changeEmail = new TextField("Email");
+        changeEmail.setRequiredIndicatorVisible(true);
+        changeEmail.setIcon(VaadinIcons.MAILBOX);
+        changeEmail.setMaxLength(50);
+        formLayoutToChangeEmail.addComponent(changeEmail);
+        formLayoutToChangeEmail.addComponent(btntochangeEmail);
+
+
+
+
+
 
         btnSubmit.addClickListener(click -> {
             try {
@@ -87,18 +107,24 @@ public class ConferenceUI extends UI {
                     Notification.show("User saved with ID:" + user.getId());
                     log.info("User saved with ID:" + user.getId());
                     textFieldLogin.setVisible(false);
-                    btnSubmit.setCaption("zmien email");
                     currentSessionComponent.setUser(user);
                     textFieldEmail.clear();
                     verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
-                    btnSubmit.addClickListener(clickEvent -> {
-                        log.info("user email changed to "+ user.getEmail());
+                    gridLayout.removeComponent(formLayout);
+                    gridLayout.addComponent(formLayoutToChangeEmail,1,0);
+                    gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
+                    btntochangeEmail.addClickListener(clickEvent -> {
                         User user1 = currentSessionComponent.getUser();
-                        user.setEmail(textFieldEmail.getValue());
-                        userService.updateUser(user1);
-                        Notification.show("Email changed sucesfully "+user.getEmail());
-                        textFieldEmail.clear();
-
+                        if(!changeEmail.getValue().equalsIgnoreCase(user.getEmail())) {
+                            log.info("user email changed to " + user.getEmail());
+                            user.setEmail(changeEmail.getValue());
+                            userService.updateUser(user1);
+                            Notification.show("Email changed sucesfully " + user.getEmail());
+                            changeEmail.clear();
+                        }
+                        else {
+                            Notification.show("you writed the same email");
+                        }
                     });
                 });
             } catch (EmailMissmatchException eme) {
