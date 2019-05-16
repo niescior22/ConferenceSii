@@ -1,4 +1,4 @@
-package com.example.demo.Entity;
+package com.example.demo.entity;
 
 
 import javax.persistence.*;
@@ -33,7 +33,7 @@ public class Conference {
     public Conference() {
     }
 
-    public Conference(String name, LocalDate date, String startTime, String endTime, Set<com.example.demo.Entity.User> users) {
+    public Conference(String name, LocalDate date, String startTime, String endTime, Set<com.example.demo.entity.User> users) {
         this.name = name;
         this.date = date;
         this.startTime = startTime;
@@ -88,11 +88,11 @@ public class Conference {
         this.endTime = endTime;
     }
 
-    public Set<com.example.demo.Entity.User> getUsers() {
+    public Set<com.example.demo.entity.User> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<com.example.demo.Entity.User> users) {
+    public void setUsers(Set<com.example.demo.entity.User> users) {
         this.users = users;
     }
     public int Setsize(Set<User> users){
