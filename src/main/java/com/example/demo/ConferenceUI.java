@@ -1,19 +1,26 @@
 package com.example.demo;
 
 
+import com.example.demo.Validator.EmailValidator;
+import com.example.demo.Validator.LoginValidator;
 import com.example.demo.services.ConferenceService;
 import com.example.demo.services.CurrentSessionComponent;
 import com.example.demo.services.UserService;
 import com.example.demo.entity.Conference;
 import com.example.demo.entity.User;
 import com.example.demo.exceptions.EmailMissmatchException;
+import com.vaadin.data.Binder;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import org.apache.log4j.Logger;
+import org.hibernate.internal.ExceptionMapperStandardImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.TransactionSystemException;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 import java.util.Optional;
 
 
@@ -30,6 +37,13 @@ public class ConferenceUI extends UI {
     private CurrentSessionComponent currentSessionComponent;
 
     Component currentSidePanel;
+
+    @Autowired
+    LoginValidator loginValidator = new LoginValidator();
+
+    @Autowired
+    EmailValidator emailValidator = new EmailValidator();
+
 
     public final static Logger log = Logger.getLogger(ConferenceUI.class);
 
@@ -48,6 +62,10 @@ public class ConferenceUI extends UI {
         gridLayout.setHeight("100%");
 
 
+
+
+
+
         Label conference = new Label("Conference");
         VerticalLayout verticalLayoutTopLeft = new VerticalLayout();
         verticalLayoutTopLeft.addComponent(conference);
@@ -62,6 +80,7 @@ public class ConferenceUI extends UI {
         textFieldLogin.setIcon(VaadinIcons.USER);
         textFieldLogin.setMaxLength(20);
 
+
         TextField textFieldEmail = new TextField("Email");
         textFieldEmail.setRequiredIndicatorVisible(true);
         textFieldEmail.setIcon(VaadinIcons.MAILBOX);
@@ -74,7 +93,6 @@ public class ConferenceUI extends UI {
         formLayout.addComponent(textFieldLogin);
         formLayout.addComponent(textFieldEmail);
         formLayout.addComponent(btnSubmit);
-
 
 
         gridLayout.addComponent(formLayout, 1, 0);
@@ -95,6 +113,17 @@ public class ConferenceUI extends UI {
         formLayoutToChangeEmail.addComponent(changeEmail);
         formLayoutToChangeEmail.addComponent(btntochangeEmail);
 
+       Binder<User> binder1 = new Binder<>();
+        binder1.setBean(currentSessionComponent.getUser());
+        binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin,User::setEmail);
+
+        binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail,User::setEmail);
+
+        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail,User::setEmail);
+
+
+
+
 
 
 
@@ -104,22 +133,27 @@ public class ConferenceUI extends UI {
             try {
                 Optional<User> optionalUser = userService.tryToSaveUser(textFieldLogin.getValue(), textFieldEmail.getValue());
                 optionalUser.ifPresent(user -> {
-                    Notification.show("User saved with ID:" + user.getId());
-                    log.info("User saved with ID:" + user.getId());
-                    textFieldLogin.setVisible(false);
-                    currentSessionComponent.setUser(user);
-                    textFieldEmail.clear();
-                    verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
-                    gridLayout.removeComponent(formLayout);
-                    gridLayout.addComponent(formLayoutToChangeEmail,1,0);
-                    gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
+
+                            Notification.show("User saved with ID:" + user.getId());
+                            log.info("User saved with ID:" + user.getId());
+                            textFieldLogin.setVisible(false);
+                            currentSessionComponent.setUser(user);
+                            textFieldEmail.clear();
+                            verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
+                            gridLayout.removeComponent(formLayout);
+                            gridLayout.addComponent(formLayoutToChangeEmail, 1, 0);
+                            gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
+
                     btntochangeEmail.addClickListener(clickEvent -> {
                         User user1 = currentSessionComponent.getUser();
+
+
                         if(!changeEmail.getValue().equalsIgnoreCase(user.getEmail())) {
                             log.info("user email changed to " + user.getEmail());
                             user.setEmail(changeEmail.getValue());
                             userService.updateUser(user1);
                             Notification.show("Email changed sucesfully " + user.getEmail());
+
                             changeEmail.clear();
                         }
                         else {
@@ -129,7 +163,16 @@ public class ConferenceUI extends UI {
                 });
             } catch (EmailMissmatchException eme) {
                 Notification.show("Podany login jest juz zajęty");
-            }
+
+            } catch (TransactionSystemException exc ){
+                Notification.show("zły format loginu lub maila");
+         //   }catch (Roleback){
+           //     Notification.show("wrong format");
+           // }
+
+
+
+
         });
 
         Grid<Conference> grid = new Grid<>();

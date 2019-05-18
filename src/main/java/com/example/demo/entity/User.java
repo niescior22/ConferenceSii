@@ -2,8 +2,8 @@ package com.example.demo.entity;
 
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -14,8 +14,11 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotNull
+
+
+    @Size(min = 5, max = 50)
     private String login;
+
     @Email
     private String email;
 

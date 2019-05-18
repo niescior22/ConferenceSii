@@ -49,12 +49,12 @@ public class DevBootstrap implements ApplicationListener<ContextRefreshedEvent> 
         Conference howToNotGetAJobConference = new Conference("howToNotGetAJob",LocalDate.of(2019,06,02),"12:00","13:45");
 
 
-        User user = new User("kamil","kamil@gmail.com");
+      //  User user = new User("kamil","kamil@gmail.com");
 
-        user.getConferences().add(java11Conference);
-        java11Conference.getUsers().add(user);
-        user.getConferences().add(java11Conference);
-        userService.saveUser(user);
+        //user.getConferences().add(java11Conference);
+        //java11Conference.getUsers().add(user);
+       // user.getConferences().add(java11Conference);
+       // userService.saveUser(user);
         conferenceService.saveConference(dockerConference);
         conferenceService.saveConference(cloudConference);
         conferenceService.saveConference(amazonWebServicesConference);
