@@ -144,34 +144,38 @@ public class ConferenceUI extends UI {
                             gridLayout.addComponent(formLayoutToChangeEmail, 1, 0);
                             gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
 
-                    btntochangeEmail.addClickListener(clickEvent -> {
-                        User user1 = currentSessionComponent.getUser();
 
-
-                        if(!changeEmail.getValue().equalsIgnoreCase(user.getEmail())) {
-                            log.info("user email changed to " + user.getEmail());
-                            user.setEmail(changeEmail.getValue());
-                            userService.updateUser(user1);
-                            Notification.show("Email changed sucesfully " + user.getEmail());
-
-                            changeEmail.clear();
-                        }
-                        else {
-                            Notification.show("you writed the same email");
-                        }
-                    });
                 });
             } catch (EmailMissmatchException eme) {
                 Notification.show("Podany login jest juz zajęty");
 
             } catch (TransactionSystemException exc ){
                 Notification.show("zły format loginu lub maila");
-         //   }catch (Roleback){
-           //     Notification.show("wrong format");
-           // }
+          }
+
+        });
 
 
+        btntochangeEmail.addClickListener(clickEvent -> {
+            try {
+                User user1 = currentSessionComponent.getUser();
 
+
+                if(!changeEmail.getValue().equalsIgnoreCase(user1.getEmail())) {
+                    log.info("user email changed to " + user1.getEmail());
+                    user1.setEmail(changeEmail.getValue());
+                    userService.updateUser(user1);
+                    Notification.show("Email changed sucesfully " + user1.getEmail());
+
+                    changeEmail.clear();
+                }
+                else {
+                    Notification.show("you writed the same email");
+                }
+
+            }catch (ConstraintViolationException exce){
+                Notification.show("wrong email or login format");
+            }
 
         });
 
