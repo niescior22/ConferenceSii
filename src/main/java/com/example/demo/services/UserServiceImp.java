@@ -42,8 +42,11 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User updateUser(User user) {
-        return userRepository.saveAndFlush(user);
+
+            return userRepository.saveAndFlush(user);
     }
+
+
 
     @Override
     public long countUser() {
@@ -62,11 +65,12 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
+
     public void addUserToConference(User user, Conference clickedConference) {
         user.getConferences().add(clickedConference);
         updateUser(user);
     }
-    @Transactional
+
     @Override
     public void removeUserToConference(User user, Conference clickedConference) {
         user.getConferences().remove(clickedConference);

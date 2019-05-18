@@ -53,7 +53,7 @@ public class ConferenceServiceImp implements ConferenceService {
         clickedConference.getUsers().add(user);
         updateConference(clickedConference);
     }
-     @Transactional
+
     @Override
     public void removeUserToConference(User user, Conference clickedConference) {
         clickedConference.getUsers().remove(user);

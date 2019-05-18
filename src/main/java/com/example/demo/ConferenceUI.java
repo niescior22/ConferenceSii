@@ -165,6 +165,7 @@ public class ConferenceUI extends UI {
                     log.info("user email changed to " + user1.getEmail());
                     user1.setEmail(changeEmail.getValue());
                     userService.updateUser(user1);
+
                     Notification.show("Email changed sucesfully " + user1.getEmail());
 
                     changeEmail.clear();
