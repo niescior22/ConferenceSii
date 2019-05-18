@@ -62,10 +62,6 @@ public class ConferenceUI extends UI {
         gridLayout.setHeight("100%");
 
 
-
-
-
-
         Label conference = new Label("Conference");
         VerticalLayout verticalLayoutTopLeft = new VerticalLayout();
         verticalLayoutTopLeft.addComponent(conference);
@@ -87,7 +83,6 @@ public class ConferenceUI extends UI {
         textFieldEmail.setMaxLength(50);
 
 
-
         Button btnSubmit = new Button("Save");
         formLayout.setWidth(null);
         formLayout.addComponent(textFieldLogin);
@@ -102,7 +97,6 @@ public class ConferenceUI extends UI {
         verticalLayoutTopLeft.setHeight(160f, Unit.PIXELS);
 
 
-
         gridLayout.setComponentAlignment(formLayout, Alignment.TOP_RIGHT);
         Button btntochangeEmail = new Button("Change email");
 
@@ -113,55 +107,51 @@ public class ConferenceUI extends UI {
         formLayoutToChangeEmail.addComponent(changeEmail);
         formLayoutToChangeEmail.addComponent(btntochangeEmail);
 
-       Binder<User> binder1 = new Binder<>();
+        Binder<User> binder1 = new Binder<>();
         binder1.setBean(currentSessionComponent.getUser());
-        binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin,User::setEmail);
+        binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin, User::setEmail);
 
-        binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail,User::setEmail);
+        binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
 
-        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail,User::setEmail);
-
-
+        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
 
 
-
-
-
-
+        Grid<Conference> grid = new Grid<>();
 
         btnSubmit.addClickListener(click -> {
             try {
                 Optional<User> optionalUser = userService.tryToSaveUser(textFieldLogin.getValue(), textFieldEmail.getValue());
                 optionalUser.ifPresent(user -> {
 
-                            Notification.show("User saved with ID:" + user.getId());
-                            log.info("User saved with ID:" + user.getId());
-                            textFieldLogin.setVisible(false);
-                            currentSessionComponent.setUser(user);
-                            textFieldEmail.clear();
-                            verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
-                            gridLayout.removeComponent(formLayout);
-                            gridLayout.addComponent(formLayoutToChangeEmail, 1, 0);
-                            gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
+                    Notification.show("User saved with ID:" + user.getId());
+                    log.info("User saved with ID:" + user.getId());
+                    textFieldLogin.setVisible(false);
+                    currentSessionComponent.setUser(user);
+                    textFieldEmail.clear();
+                    verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
+                    gridLayout.removeComponent(formLayout);
+                    gridLayout.addComponent(formLayoutToChangeEmail, 1, 0);
+                    gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
 
 
                 });
             } catch (EmailMissmatchException eme) {
                 Notification.show("Podany login jest juz zajęty");
 
-            } catch (TransactionSystemException exc ){
+            } catch (TransactionSystemException exc) {
                 Notification.show("zły format loginu lub maila");
-          }
+            }
 
         });
 
 
         btntochangeEmail.addClickListener(clickEvent -> {
+            User user1 = currentSessionComponent.getUser();
+            String oldEmail;
+            oldEmail = user1.getEmail();
             try {
-                User user1 = currentSessionComponent.getUser();
 
-
-                if(!changeEmail.getValue().equalsIgnoreCase(user1.getEmail())) {
+                if (!changeEmail.getValue().equalsIgnoreCase(user1.getEmail())) {
                     log.info("user email changed to " + user1.getEmail());
                     user1.setEmail(changeEmail.getValue());
                     userService.updateUser(user1);
@@ -169,18 +159,18 @@ public class ConferenceUI extends UI {
                     Notification.show("Email changed sucesfully " + user1.getEmail());
 
                     changeEmail.clear();
-                }
-                else {
+                } else {
                     Notification.show("you writed the same email");
                 }
 
-            }catch (ConstraintViolationException exce){
+            } catch (ConstraintViolationException exce) {
                 Notification.show("wrong email or login format");
+                grid.setItems(conferenceService.getallConferences());
+                currentSessionComponent.getUser().setEmail(oldEmail);
             }
 
         });
 
-        Grid<Conference> grid = new Grid<>();
 
         grid.addColumn(Conference::getName)
                 .setCaption("Conference");
@@ -228,12 +218,12 @@ public class ConferenceUI extends UI {
                     });
                 }
 
-            conferenceGrid.addComponent(new Label("Zajętość konferencji: (" + clickedConference.getUsers().size() + "/5)"), 0, 1);
-            conferenceGrid.addComponent(buttonControl, 0, 2);
+                conferenceGrid.addComponent(new Label("Zajętość konferencji: (" + clickedConference.getUsers().size() + "/5)"), 0, 1);
+                conferenceGrid.addComponent(buttonControl, 0, 2);
 
-        } catch (NullPointerException e){
-            Notification.show("zaloguj się by zapisac na prelekcje");
-        }
+            } catch (NullPointerException e) {
+                Notification.show("zaloguj się by zapisac na prelekcje");
+            }
             Grid<User> registeredUsersGrid = new Grid<>();
 
             registeredUsersGrid.addColumn(User::getLogin)
@@ -263,10 +253,10 @@ public class ConferenceUI extends UI {
                 return true;
             }
         }
-            return false;
+        return false;
 
-        }
     }
+}
 
 
 
