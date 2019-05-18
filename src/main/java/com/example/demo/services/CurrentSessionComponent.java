@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
 @Component
 @Scope("session")
 public class CurrentSessionComponent {
-    private User user;
+    private Long userId;
 
-    public void setUser(User user) {
-        this.user = user;
+    public Long getUserId() {
+        return userId;
     }
 
-    public User getUser() {
-        return user;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

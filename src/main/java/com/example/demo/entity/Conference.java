@@ -12,9 +12,8 @@ public class Conference {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO )
-    private  Long id;
-
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     private String name;
 
@@ -24,21 +23,11 @@ public class Conference {
 
     private String endTime;
 
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "conferences_user",joinColumns = @JoinColumn(name = "conference_id"),inverseJoinColumns = @JoinColumn(name ="user_id"))
-    private Set<User> users= new LinkedHashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<User> users;
 
 
     public Conference() {
-    }
-
-    public Conference(String name, LocalDate date, String startTime, String endTime, Set<com.example.demo.entity.User> users) {
-        this.name = name;
-        this.date = date;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.users = users;
     }
 
     public Conference(String name, LocalDate date, String startTime, String endTime) {
@@ -46,6 +35,14 @@ public class Conference {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
+    }
+
+    public Conference(String name, LocalDate date, String startTime, String endTime, Set<User> users) {
+        this.name = name;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.users = users;
     }
 
     public Long getId() {
@@ -88,25 +85,11 @@ public class Conference {
         this.endTime = endTime;
     }
 
-    public Set<com.example.demo.entity.User> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<com.example.demo.entity.User> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
-    }
-    public int Setsize(Set<User> users){
-        int size = users.size();
-        return size;
-
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Conference that = (Conference) o;
-        return Objects.equals(id, that.id);
     }
 }

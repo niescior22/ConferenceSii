@@ -4,6 +4,7 @@ package com.example.demo.services;
 import com.example.demo.entity.Conference;
 import com.example.demo.entity.User;
 import com.example.demo.repositories.ConferenceRepository;
+import com.example.demo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,9 @@ import java.util.List;
 public class ConferenceServiceImp implements ConferenceService {
     @Autowired
     ConferenceRepository conferenceRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Override
     public Conference saveConference(Conference conference) {
@@ -48,16 +52,26 @@ public class ConferenceServiceImp implements ConferenceService {
         return conferenceRepository.count();
     }
 
-    @Override
-    public void addUserToConference(User user, Conference clickedConference) {
-        clickedConference.getUsers().add(user);
-        updateConference(clickedConference);
+    @Transactional
+    public boolean isConferenceinSameTime(Long userId, Long conferenceId) {
+        User user = userRepository.getOne(userId);
+        Conference clickedConference = conferenceRepository.getOne(conferenceId);
+
+        // todo: zastąp to zapytaniem o przynależność - niech baza danych zwraca wynik.
+        for (Conference conference1 : userRepository.getOne(userId).getConferences()) {
+            if ((conference1.getDate().isEqual(clickedConference.getDate())) && (conference1.getStartTime().equalsIgnoreCase(clickedConference.getStartTime()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
+    @Transactional
     @Override
-    public void removeUserToConference(User user, Conference clickedConference) {
-        clickedConference.getUsers().remove(user);
-        updateConference(clickedConference);
+    public boolean conferenceContainsUser(Long conferenceId, Long userId) {
+        User user = userRepository.getOne(userId);
+        Conference conference = conferenceRepository.getOne(conferenceId);
 
+        return conference.getUsers().contains(user);
     }
 }

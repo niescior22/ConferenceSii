@@ -17,6 +17,7 @@ import com.vaadin.ui.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolationException;
 
@@ -106,16 +107,21 @@ public class ConferenceUI extends UI {
         formLayoutToChangeEmail.addComponent(changeEmail);
         formLayoutToChangeEmail.addComponent(btntochangeEmail);
 
-        Binder<User> binder1 = new Binder<>();
-        binder1.setBean(currentSessionComponent.getUser());
-        binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin, User::setEmail);
+       ///Binder<User> binder1 = new Binder<>();
+      //  binder1.setBean(userService.getUser(currentSessionComponent.getUserId()));
+    //    binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin, User::setEmail);
 
-        binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
+  //      binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
 
-        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
+//        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
 
 
-        Grid<Conference> grid = new Grid<>();
+        Grid<Conference> conferencesGrid = new Grid<>();
+        Grid<User> registeredUsersGrid = new Grid<>();
+        registeredUsersGrid.addColumn(User::getLogin)
+                .setCaption("Login");
+        registeredUsersGrid.addColumn(User::getEmail)
+                .setCaption("Email");
 
         btnSubmit.addClickListener(click -> {
             try {
@@ -125,7 +131,7 @@ public class ConferenceUI extends UI {
                     Notification.show("User saved with ID:" + user.getId());
                     log.info("User saved with ID:" + user.getId());
 
-                    currentSessionComponent.setUser(user);
+                    currentSessionComponent.setUserId(user.getId());
 
                     verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
                     gridLayout.removeComponent(formLayout);
@@ -140,12 +146,12 @@ public class ConferenceUI extends UI {
             } catch (TransactionSystemException exc) {
                 Notification.show("zły format loginu lub maila");
             }
-
+            conferencesGrid.setItems(conferenceService.getallConferences());
         });
 
 
         btntochangeEmail.addClickListener(clickEvent -> {
-            User user1 = currentSessionComponent.getUser();
+            User user1 = userService.getUser(currentSessionComponent.getUserId());
             String oldEmail;
             oldEmail = user1.getEmail();
             try {
@@ -154,7 +160,7 @@ public class ConferenceUI extends UI {
                     log.info("user email changed to " + user1.getEmail());
                     user1.setEmail(changeEmail.getValue());
                     userService.updateUser(user1);
-                    grid.setItems(conferenceService.getallConferences());
+                    conferencesGrid.setItems(conferenceService.getallConferences());
 
                     Notification.show("Email changed sucesfully " + user1.getEmail());
 
@@ -165,26 +171,25 @@ public class ConferenceUI extends UI {
 
             } catch (ConstraintViolationException exce) {
                 Notification.show("wrong email or login format");
-                grid.setItems(conferenceService.getallConferences());
-                currentSessionComponent.getUser().setEmail(oldEmail);
+                conferencesGrid.setItems(conferenceService.getallConferences());
             }
-
+            conferencesGrid.setItems(conferenceService.getallConferences());
         });
 
 
-        grid.addColumn(Conference::getName)
+        conferencesGrid.addColumn(Conference::getName)
                 .setCaption("Conference");
-        grid.addColumn(Conference::getDate)
+        conferencesGrid.addColumn(Conference::getDate)
                 .setCaption("Date");
-        grid.addColumn(Conference::getStartTime)
+        conferencesGrid.addColumn(Conference::getStartTime)
                 .setCaption("Start");
-        grid.addColumn(Conference::getEndTime)
+        conferencesGrid.addColumn(Conference::getEndTime)
                 .setCaption("End");
-        grid.addColumn(Conference::getUsers)
-                .setCaption("size");
+        conferencesGrid.addColumn(Conference::getUsers)
+                .setCaption("Zapisani użytknownicy");
 
-        grid.addItemClickListener(itemClick -> {
-            Conference clickedConference = itemClick.getItem();
+        conferencesGrid.addItemClickListener(itemClick -> {
+            Long clickedConference = itemClick.getItem().getId();
             if (currentSidePanel != null) {
                 gridLayout.removeComponent(currentSidePanel);
             }
@@ -196,41 +201,33 @@ public class ConferenceUI extends UI {
 
             Button buttonControl;
             try {
-
-
-                if (clickedConference.getUsers().contains(currentSessionComponent.getUser())) {
+                if (conferenceService.conferenceContainsUser(clickedConference, currentSessionComponent.getUserId())) {
                     buttonControl = new Button("Usun mnie z konfy");
                     buttonControl.addClickListener(listener -> {
-                        User user = currentSessionComponent.getUser();
-                        userService.removeUserToConference(user, clickedConference);
-                        conferenceService.removeUserToConference(user, clickedConference);
-                        Notification.show("anulowałes rezerwacje na konference " + clickedConference.getName());
+                        userService.removeUserToConference(currentSessionComponent.getUserId(), clickedConference);
+                        Notification.show("anulowałes rezerwacje na konference " + clickedConference);
+                        conferencesGrid.setItems(conferenceService.getallConferences());
+                        registeredUsersGrid.setItems(conferenceService.getConference(clickedConference).getUsers());
                     });
                 } else {
-                    User user = currentSessionComponent.getUser();
                     buttonControl = new Button("Dodaj do tej konferencji");
-                    buttonControl.setEnabled(clickedConference.getUsers().size() < 5 && !isConferenceinSameTime(user, clickedConference));
+                    buttonControl.setEnabled(itemClick.getItem().getUsers().size() < 5 && !conferenceService.isConferenceinSameTime(currentSessionComponent.getUserId(), clickedConference));
                     buttonControl.addClickListener(listener -> {
-                        // User user = currentSessionComponent.getUser();
-                        userService.addUserToConference(user, clickedConference);
-                        conferenceService.addUserToConference(user, clickedConference);
-                        Notification.show("Zarezerwowałes mniejsce na konferencji :" + clickedConference.getName());
+                        userService.addUserToConference(currentSessionComponent.getUserId(), clickedConference);
+                        Notification.show("Zarezerwowałes mniejsce na konferencji :" + clickedConference);
+                        conferencesGrid.setItems(conferenceService.getallConferences());
+                        registeredUsersGrid.setItems(conferenceService.getConference(clickedConference).getUsers());
                     });
                 }
 
-                conferenceGrid.addComponent(new Label("Zajętość konferencji: (" + clickedConference.getUsers().size() + "/5)"), 0, 1);
+                conferenceGrid.addComponent(new Label("Zajętość konferencji: (" + itemClick.getItem().getUsers().size() + "/5)"), 0, 1);
                 conferenceGrid.addComponent(buttonControl, 0, 2);
 
             } catch (NullPointerException e) {
                 Notification.show("zaloguj się by zapisac na prelekcje");
             }
-            Grid<User> registeredUsersGrid = new Grid<>();
 
-            registeredUsersGrid.addColumn(User::getLogin)
-                    .setCaption("Login");
-            registeredUsersGrid.addColumn(User::getEmail)
-                    .setCaption("Email");
-            registeredUsersGrid.setItems(clickedConference.getUsers());
+            registeredUsersGrid.setItems(conferenceService.getConference(clickedConference).getUsers());
 
             conferenceGrid.addComponent(registeredUsersGrid, 0, 3);
             conferenceGrid.setWidth("100%");
@@ -241,21 +238,12 @@ public class ConferenceUI extends UI {
             currentSidePanel = conferenceGrid;
         });
 
-        grid.setItems(conferenceService.getallConferences());
-        grid.setWidth("100%");
-        gridLayout.addComponent(grid, 0, 1);
+        conferencesGrid.setItems(conferenceService.getallConferences());
+        conferencesGrid.setWidth("100%");
+        gridLayout.addComponent(conferencesGrid, 0, 1);
     }
 
-    private boolean isConferenceinSameTime(User user, Conference clickedConference) {
 
-        for (Conference conference1 : user.getConferences()) {
-            if ((conference1.getDate().isEqual(clickedConference.getDate())) && (conference1.getStartTime().equalsIgnoreCase(clickedConference.getStartTime()))) {
-                return true;
-            }
-        }
-        return false;
-
-    }
 }
 
 

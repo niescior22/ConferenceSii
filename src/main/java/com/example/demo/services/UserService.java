@@ -1,7 +1,6 @@
 package com.example.demo.services;
 
 
-import com.example.demo.entity.Conference;
 import com.example.demo.entity.User;
 
 import java.util.List;
@@ -23,9 +22,9 @@ public interface UserService {
 
     Optional<User> tryToSaveUser(String login, String email);
 
-    void addUserToConference(User user, Conference clickedConference);
+    void addUserToConference(Long userId, Long conferenceId);
 
-    void removeUserToConference(User user, Conference clickedConference);
+    void removeUserToConference(Long user, Long conferenceId);
 
 
 }

@@ -18,7 +18,7 @@ public interface ConferenceService {
 
     long countConference();
 
-    void addUserToConference(User user, Conference clickedConference);
+    boolean isConferenceinSameTime(Long userId, Long conferenceId);
 
-    void removeUserToConference(User user, Conference clickedConference);
+    boolean conferenceContainsUser(Long clickedConference, Long userId);
 }

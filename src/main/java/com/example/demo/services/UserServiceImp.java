@@ -4,11 +4,13 @@ package com.example.demo.services;
 import com.example.demo.entity.Conference;
 import com.example.demo.entity.User;
 import com.example.demo.exceptions.EmailMissmatchException;
+import com.example.demo.repositories.ConferenceRepository;
 import com.example.demo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,8 @@ public class UserServiceImp implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ConferenceRepository conferenceRepository;
 
     @Override
     public User saveUser(User user) {
@@ -42,11 +46,8 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User updateUser(User user) {
-
-            return userRepository.saveAndFlush(user);
+        return userRepository.saveAndFlush(user);
     }
-
-
 
     @Override
     public long countUser() {
@@ -59,23 +60,34 @@ public class UserServiceImp implements UserService {
         if (optionalUser.isPresent()) {
             return checkUserEmail(email, optionalUser);
         } else {
-            createUser(login, email);
+            return Optional.of(createUser(login, email));
         }
-        return Optional.empty();
     }
 
+    @Transactional
     @Override
+    public void addUserToConference(Long userId, Long conferenceId) {
+        User user = userRepository.getOne(userId);
+        Conference conference = conferenceRepository.getOne(conferenceId);
 
-    public void addUserToConference(User user, Conference clickedConference) {
-        user.getConferences().add(clickedConference);
-        updateUser(user);
+        user.getConferences().add(conference);
+        conference.getUsers().add(user);
+
+        conferenceRepository.save(conference);
+        userRepository.save(user);
     }
 
+    @Transactional
     @Override
-    public void removeUserToConference(User user, Conference clickedConference) {
-        user.getConferences().remove(clickedConference);
-        updateUser(user);
+    public void removeUserToConference(Long userId, Long conferenceId) {
+        User user = userRepository.getOne(userId);
+        Conference conference = conferenceRepository.getOne(conferenceId);
 
+        user.getConferences().remove(conference);
+        conference.getUsers().remove(user);
+
+        conferenceRepository.save(conference);
+        userRepository.save(user);
     }
 
     private Optional<User> checkUserEmail(String email, Optional<User> optionalUser) {
@@ -87,9 +99,9 @@ public class UserServiceImp implements UserService {
         }
     }
 
-    private void createUser(String login, String email) {
-        User user = new User(login, email);
-        userRepository.save(user);
+    private User createUser(String login, String email) {
+        User user = new User(login, email, new HashSet<>());
+        return userRepository.save(user);
     }
 
 
