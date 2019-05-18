@@ -40,7 +40,7 @@ public class ConferenceServiceImp implements ConferenceService {
 
     @Override
     public Conference updateConference(Conference conference) {
-        return conferenceRepository.save(conference);
+        return conferenceRepository.saveAndFlush(conference);
     }
 
     @Override

@@ -26,7 +26,7 @@ public class Conference {
 
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "conferences_user",joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name ="conference_id"))
+    @JoinTable(name = "conferences_user",joinColumns = @JoinColumn(name = "conference_id"),inverseJoinColumns = @JoinColumn(name ="user_id"))
     private Set<User> users= new LinkedHashSet<>();
 
 

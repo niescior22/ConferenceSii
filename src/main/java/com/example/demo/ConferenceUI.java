@@ -15,12 +15,11 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import org.apache.log4j.Logger;
-import org.hibernate.internal.ExceptionMapperStandardImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionSystemException;
 
 import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
+
 import java.util.Optional;
 
 
@@ -125,9 +124,9 @@ public class ConferenceUI extends UI {
 
                     Notification.show("User saved with ID:" + user.getId());
                     log.info("User saved with ID:" + user.getId());
-                    textFieldLogin.setVisible(false);
+
                     currentSessionComponent.setUser(user);
-                    textFieldEmail.clear();
+
                     verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
                     gridLayout.removeComponent(formLayout);
                     gridLayout.addComponent(formLayoutToChangeEmail, 1, 0);
@@ -155,6 +154,7 @@ public class ConferenceUI extends UI {
                     log.info("user email changed to " + user1.getEmail());
                     user1.setEmail(changeEmail.getValue());
                     userService.updateUser(user1);
+                    grid.setItems(conferenceService.getallConferences());
 
                     Notification.show("Email changed sucesfully " + user1.getEmail());
 

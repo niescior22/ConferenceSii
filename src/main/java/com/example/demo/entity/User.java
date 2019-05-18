@@ -17,12 +17,14 @@ public class User {
 
 
     @Size(min = 5, max = 50)
+    @NotEmpty
     private String login;
 
     @Email
+    @NotEmpty
     private String email;
 
-    @ManyToMany(mappedBy = "users",fetch = FetchType.EAGER )
+    @ManyToMany(mappedBy = "users",fetch = FetchType.EAGER)
     private Set<Conference> conferences = new HashSet<>();
 
 
