@@ -1,4 +1,4 @@
-package com.example.demo.Validator;
+package com.example.demo.validator;
 
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;

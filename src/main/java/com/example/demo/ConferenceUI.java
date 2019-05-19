@@ -1,14 +1,15 @@
 package com.example.demo;
 
 
-import com.example.demo.Validator.EmailValidator;
-import com.example.demo.Validator.LoginValidator;
+import com.example.demo.validator.EmailValidator;
+import com.example.demo.validator.LoginValidator;
 import com.example.demo.services.ConferenceService;
 import com.example.demo.services.CurrentSessionComponent;
 import com.example.demo.services.UserService;
 import com.example.demo.entity.Conference;
 import com.example.demo.entity.User;
 import com.example.demo.exceptions.EmailMissmatchException;
+import com.example.demo.writer.Writer;
 import com.vaadin.data.Binder;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.VaadinRequest;
@@ -17,7 +18,6 @@ import com.vaadin.ui.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionSystemException;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolationException;
 
@@ -44,6 +44,13 @@ public class ConferenceUI extends UI {
     @Autowired
     EmailValidator emailValidator = new EmailValidator();
 
+    @Autowired
+    Writer writer = new Writer();
+
+
+
+
+
 
     public final static Logger log = Logger.getLogger(ConferenceUI.class);
 
@@ -60,6 +67,7 @@ public class ConferenceUI extends UI {
         gridLayout.setColumnExpandRatio(1, 1.0f);
         gridLayout.setWidth("100%");
         gridLayout.setHeight("100%");
+
 
 
         Label conference = new Label("Conference");
@@ -107,13 +115,13 @@ public class ConferenceUI extends UI {
         formLayoutToChangeEmail.addComponent(changeEmail);
         formLayoutToChangeEmail.addComponent(btntochangeEmail);
 
-       ///Binder<User> binder1 = new Binder<>();
+       Binder<User> binder1 = new Binder<>();
       //  binder1.setBean(userService.getUser(currentSessionComponent.getUserId()));
-    //    binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin, User::setEmail);
+      binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin, User::setEmail);
 
-  //      binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
+     binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
 
-//        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
+        binder1.forField(changeEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
 
 
         Grid<Conference> conferencesGrid = new Grid<>();
@@ -215,12 +223,18 @@ public class ConferenceUI extends UI {
                     buttonControl.addClickListener(listener -> {
                         userService.addUserToConference(currentSessionComponent.getUserId(), clickedConference);
                         Notification.show("Zarezerwowałes mniejsce na konferencji :" + clickedConference);
+                        try {
+                            writer.writeEmail(currentSessionComponent.getUserId(),clickedConference);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         conferencesGrid.setItems(conferenceService.getallConferences());
                         registeredUsersGrid.setItems(conferenceService.getConference(clickedConference).getUsers());
+
                     });
                 }
 
-                conferenceGrid.addComponent(new Label("Zajętość konferencji: (" + itemClick.getItem().getUsers().size() + "/5)"), 0, 1);
+                conferenceGrid.addComponent(new Label("Miejsca na konferencji: (" + itemClick.getItem().getUsers().size() + "/5)"), 0, 1);
                 conferenceGrid.addComponent(buttonControl, 0, 2);
 
             } catch (NullPointerException e) {

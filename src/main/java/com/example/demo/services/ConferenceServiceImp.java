@@ -57,7 +57,6 @@ public class ConferenceServiceImp implements ConferenceService {
         User user = userRepository.getOne(userId);
         Conference clickedConference = conferenceRepository.getOne(conferenceId);
 
-        // todo: zastąp to zapytaniem o przynależność - niech baza danych zwraca wynik.
         for (Conference conference1 : userRepository.getOne(userId).getConferences()) {
             if ((conference1.getDate().isEqual(clickedConference.getDate())) && (conference1.getStartTime().equalsIgnoreCase(clickedConference.getStartTime()))) {
                 return true;
