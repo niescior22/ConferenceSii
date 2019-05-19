@@ -52,6 +52,13 @@ public class ConferenceServiceImp implements ConferenceService {
         return conferenceRepository.count();
     }
 
+    /**
+     *
+      * @param userId  id of current Session component user
+     * @param conferenceId   clicked conference
+     * @return   returns true if current user already got conference in set With same date and time
+     *            otherwise return false
+     */
     @Transactional
     public boolean isConferenceinSameTime(Long userId, Long conferenceId) {
         User user = userRepository.getOne(userId);

@@ -8,6 +8,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * User Entity class with Login and Id fields
+ *  Used validation  Annotations
+ *  defined many to many relationship with Set conferences
+ */
 @Entity
 public class User {
 

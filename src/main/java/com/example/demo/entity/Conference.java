@@ -7,6 +7,11 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ *  Entity Conference class
+ *  Many to many owning site relationship with User
+ */
+
 @Entity
 public class Conference {
 

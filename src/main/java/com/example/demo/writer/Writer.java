@@ -12,6 +12,11 @@ import java.text.SimpleDateFormat;
 
 import java.util.Date;
 
+/**
+ * Writer class creates file "Powiadomienia" if it dont exists or append it
+ * its used when User singed up to conference
+ * its imitating sending an email
+ */
 
 @Component
 public class Writer {
@@ -39,7 +44,7 @@ public class Writer {
         bufferedWriter.newLine();
         bufferedWriter.write(user.getEmail());
         bufferedWriter.newLine();
-        bufferedWriter.write("Dziękuemy "+user.getLogin()+" za zapisanie się na konferencje"+ conference.getName());
+        bufferedWriter.write("Dziękuemy "+user.getLogin()+" za zapisanie się na konferencje "+ conference.getName());
         bufferedWriter.newLine();
         bufferedWriter.close();
 

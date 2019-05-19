@@ -54,6 +54,15 @@ public class UserServiceImp implements UserService {
         return userRepository.count();
     }
 
+
+    /**
+     * @param login login writed in textfield
+     * @param email   email writed in textfield
+     * @return    method checks if user already with this parameter login already exist in database
+     * if it is then checkForUserEmail is called
+     * if not it creates new user
+     *
+     */
     @Override
     public Optional<User> tryToSaveUser(String login, String email) {
         Optional<User> optionalUser = userRepository.findByLogin(login);
@@ -63,6 +72,7 @@ public class UserServiceImp implements UserService {
             return Optional.of(createUser(login, email));
         }
     }
+
 
     @Transactional
     @Override
@@ -90,6 +100,13 @@ public class UserServiceImp implements UserService {
         userRepository.save(user);
     }
 
+    /**
+     *
+      * @param email
+     * @param optionalUser
+     * @return  if user that we try to save  got diffrent email and same login it throws EmailMissmatchException
+     *
+     */
     private Optional<User> checkUserEmail(String email, Optional<User> optionalUser) {
         User user = optionalUser.get();
         if (!user.getEmail().equalsIgnoreCase(email)) {

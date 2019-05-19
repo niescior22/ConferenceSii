@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
+/**
+ * class used to initialize data to database.
+ * Saves hard coded Conferences using Conference Service
+ */
 
 @Component
 public class DevBootstrap implements ApplicationListener<ContextRefreshedEvent> {

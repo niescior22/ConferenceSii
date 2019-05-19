@@ -102,6 +102,7 @@ public class ConferenceUI extends UI {
         gridLayout.addComponent(formLayout, 1, 0);
 
         FormLayout formLayoutToChangeEmail = new FormLayout();
+        formLayoutToChangeEmail.setWidth(null);
         formLayoutToChangeEmail.setHeight(160f, Unit.PIXELS);
         verticalLayoutTopLeft.setHeight(160f, Unit.PIXELS);
 
@@ -117,7 +118,7 @@ public class ConferenceUI extends UI {
         formLayoutToChangeEmail.addComponent(btntochangeEmail);
 
        Binder<User> binder1 = new Binder<>();
-      //  binder1.setBean(userService.getUser(currentSessionComponent.getUserId()));
+
       binder1.forField(textFieldLogin).withValidator(loginValidator).bind(User::getLogin, User::setEmail);
 
      binder1.forField(textFieldEmail).withValidator(emailValidator).bind(User::getEmail, User::setEmail);
@@ -263,8 +264,6 @@ public class ConferenceUI extends UI {
         conferencesGrid.setWidth("100%");
         gridLayout.addComponent(conferencesGrid, 0, 1);
     }
-
-
 }
 
 
