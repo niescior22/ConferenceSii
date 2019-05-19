@@ -30,8 +30,11 @@ public class Writer {
         Date date = new Date();
         String format = formatter.format(date);
 
+
         User user = userRepository.getOne(userId);
         Conference conference = conferenceRepository.getOne(conferenceId);
+        bufferedWriter.write("<==========================================================>");
+        bufferedWriter.newLine();
         bufferedWriter.write(format);
         bufferedWriter.newLine();
         bufferedWriter.write(user.getEmail());

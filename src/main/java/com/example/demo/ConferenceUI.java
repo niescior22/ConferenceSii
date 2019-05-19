@@ -17,6 +17,7 @@ import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.TransactionSystemException;
 
 import javax.validation.ConstraintViolationException;
@@ -91,7 +92,7 @@ public class ConferenceUI extends UI {
         textFieldEmail.setMaxLength(50);
 
 
-        Button btnSubmit = new Button("Save");
+        Button btnSubmit = new Button("Zaloguj");
         formLayout.setWidth(null);
         formLayout.addComponent(textFieldLogin);
         formLayout.addComponent(textFieldEmail);
@@ -106,7 +107,7 @@ public class ConferenceUI extends UI {
 
 
         gridLayout.setComponentAlignment(formLayout, Alignment.TOP_RIGHT);
-        Button btntochangeEmail = new Button("Change email");
+        Button btntochangeEmail = new Button("Zmien Email");
 
         TextField changeEmail = new TextField("Email");
         changeEmail.setRequiredIndicatorVisible(true);
@@ -136,12 +137,12 @@ public class ConferenceUI extends UI {
                 Optional<User> optionalUser = userService.tryToSaveUser(textFieldLogin.getValue(), textFieldEmail.getValue());
                 optionalUser.ifPresent(user -> {
 
-                    Notification.show("User saved with ID:" + user.getId());
+                    Notification.show("Uzytkownik zapisany z :" + user.getId());
                     log.info("User saved with ID:" + user.getId());
 
                     currentSessionComponent.setUserId(user.getId());
 
-                    verticalLayoutTopLeft.addComponent(new Label("Welcome " + user.getLogin() + " fell free to sing up to as many prelessons as you want, unless they collide in time"));
+                    verticalLayoutTopLeft.addComponent(new Label("Witaj,  " + user.getLogin() ));
                     gridLayout.removeComponent(formLayout);
                     gridLayout.addComponent(formLayoutToChangeEmail, 1, 0);
                     gridLayout.setComponentAlignment(formLayoutToChangeEmail, Alignment.TOP_RIGHT);
@@ -150,9 +151,11 @@ public class ConferenceUI extends UI {
                 });
             } catch (EmailMissmatchException eme) {
                 Notification.show("Podany login jest juz zajęty");
+                log.info(" user tried to login with same login and diffrent name");
 
             } catch (TransactionSystemException exc) {
                 Notification.show("zły format loginu lub maila");
+                log.info("validation stop user from loging in");
             }
             conferencesGrid.setItems(conferenceService.getallConferences());
         });
@@ -170,31 +173,33 @@ public class ConferenceUI extends UI {
                     userService.updateUser(user1);
                     conferencesGrid.setItems(conferenceService.getallConferences());
 
-                    Notification.show("Email changed sucesfully " + user1.getEmail());
+                    Notification.show("Email zmieniony na : " + user1.getEmail());
 
                     changeEmail.clear();
                 } else {
-                    Notification.show("you writed the same email");
+                    Notification.show("Wpisałeś aktualny email");
                 }
 
             } catch (ConstraintViolationException exce) {
-                Notification.show("wrong email or login format");
+                Notification.show("zły format loginu lub maila");
+                log.info("user id:"+ currentSessionComponent.getUserId()+ "triend to change email with wrong format");
                 conferencesGrid.setItems(conferenceService.getallConferences());
+
             }
             conferencesGrid.setItems(conferenceService.getallConferences());
         });
 
 
         conferencesGrid.addColumn(Conference::getName)
-                .setCaption("Conference");
+                .setCaption("Konfenrencja");
         conferencesGrid.addColumn(Conference::getDate)
-                .setCaption("Date");
+                .setCaption("Data");
         conferencesGrid.addColumn(Conference::getStartTime)
-                .setCaption("Start");
+                .setCaption("Poczatek");
         conferencesGrid.addColumn(Conference::getEndTime)
-                .setCaption("End");
+                .setCaption("Koniec");
         conferencesGrid.addColumn(Conference::getUsers)
-                .setCaption("Zapisani użytknownicy");
+                .setCaption("Zapisani uczestnicy");
 
         conferencesGrid.addItemClickListener(itemClick -> {
             Long clickedConference = itemClick.getItem().getId();
@@ -210,10 +215,11 @@ public class ConferenceUI extends UI {
             Button buttonControl;
             try {
                 if (conferenceService.conferenceContainsUser(clickedConference, currentSessionComponent.getUserId())) {
-                    buttonControl = new Button("Usun mnie z konfy");
+                    buttonControl = new Button("Anuluj rezerwacje");
                     buttonControl.addClickListener(listener -> {
                         userService.removeUserToConference(currentSessionComponent.getUserId(), clickedConference);
                         Notification.show("anulowałes rezerwacje na konference " + clickedConference);
+                        log.info("user with id:"+currentSessionComponent.getUserId() + "  canceled reservation with conference id "+ clickedConference);
                         conferencesGrid.setItems(conferenceService.getallConferences());
                         registeredUsersGrid.setItems(conferenceService.getConference(clickedConference).getUsers());
                     });
@@ -223,6 +229,7 @@ public class ConferenceUI extends UI {
                     buttonControl.addClickListener(listener -> {
                         userService.addUserToConference(currentSessionComponent.getUserId(), clickedConference);
                         Notification.show("Zarezerwowałes mniejsce na konferencji :" + clickedConference);
+                        log.info( "user with id"+currentSessionComponent.getUserId()+" singed up to conference with Id " + clickedConference);
                         try {
                             writer.writeEmail(currentSessionComponent.getUserId(),clickedConference);
                         } catch (Exception e) {
@@ -237,7 +244,7 @@ public class ConferenceUI extends UI {
                 conferenceGrid.addComponent(new Label("Miejsca na konferencji: (" + itemClick.getItem().getUsers().size() + "/5)"), 0, 1);
                 conferenceGrid.addComponent(buttonControl, 0, 2);
 
-            } catch (NullPointerException e) {
+            } catch (InvalidDataAccessApiUsageException e) {
                 Notification.show("zaloguj się by zapisac na prelekcje");
             }
 
